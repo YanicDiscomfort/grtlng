@@ -148,9 +148,10 @@ StmtNode *varDeclStmt(Parser *parser) {
     // if instant assignment
     if (match(parser, TOKEN_EQUALS)) {
         node->value = parseExprPrec(parser);
+        consume(parser, TOKEN_SEMICOLON, " after variable assignment");
+    } else {
+        consume(parser, TOKEN_SEMICOLON, " after variable declaration");
     }
-
-    consume(parser, TOKEN_SEMICOLON, " after variable declaration");
 
     return (StmtNode*) node;
 }
