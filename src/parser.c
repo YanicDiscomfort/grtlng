@@ -133,7 +133,7 @@ StmtNode *exprStmt(Parser *parser) {
 }
 
 StmtNode *varDeclStmt(Parser *parser) {
-    VarDeclNode *node = ALLOC_NODE(VarDeclNode);
+    StmtVarDeclNode *node = ALLOC_NODE(StmtVarDeclNode);
 
     node->varType = parser->previous.type;
 
@@ -169,7 +169,7 @@ StmtNode *parseStmt(Parser *parser) {
 // expression functions
 
 ExprNode *exprBinary(Parser *parser, ExprNode *left) {
-    BinaryExprNode *node = ALLOC_NODE(BinaryExprNode);
+    ExprBinaryNode *node = ALLOC_NODE(ExprBinaryNode);
 
     node->header.type = EXPR_BINARY_EXPR;
 
@@ -183,7 +183,7 @@ ExprNode *exprBinary(Parser *parser, ExprNode *left) {
 }
 
 ExprNode *exprUnary(Parser *parser) {
-    UnaryExprNode *node = ALLOC_NODE(UnaryExprNode);
+    ExprUnaryNode *node = ALLOC_NODE(ExprUnaryNode);
 
     node->header.type = EXPR_UNARY_EXPR;
     node->operator = parser->previous.type;
@@ -195,7 +195,7 @@ ExprNode *exprUnary(Parser *parser) {
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 static ExprNode *number(Parser *parser) {
-    NumberNode *node = ALLOC_NODE(NumberNode);
+    ExprNumberNode *node = ALLOC_NODE(ExprNumberNode);
 
     node->header.type = EXPR_NUMBER;
     node->value = * (double*) parser->previous.data;
@@ -211,7 +211,7 @@ ExprNode *grouping(Parser *parser) {
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 ExprNode *variable(Parser *parser) {
-    VarAccessNode *node = ALLOC_NODE(VarAccessNode);
+    ExprVarNode *node = ALLOC_NODE(ExprVarNode);
     node->header.type = EXPR_VAR;
     node->name = parser->previous.data;
     return (ExprNode*) node;

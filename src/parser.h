@@ -38,23 +38,23 @@ typedef struct {
     ExprNode *left;
     ExprNode *right;
     TokenType operator;
-} BinaryExprNode;
+} ExprBinaryNode;
 
 typedef struct {
     ExprNode header;
     ExprNode *right;
     TokenType operator;
-} UnaryExprNode;
+} ExprUnaryNode;
 
 typedef struct {
     ExprNode header;
     double value;
-} NumberNode;
+} ExprNumberNode;
 
 typedef struct {
     ExprNode header;
     char *name;
-} VarAccessNode;
+} ExprVarNode;
 
 
 typedef enum {
@@ -70,16 +70,10 @@ typedef struct {
 
 typedef struct {
     StmtNode header;
-    char* name;
-    ExprNode *value;
-} VarAssignNode;
-
-typedef struct {
-    StmtNode header;
     TokenType varType;
     char* name;
     ExprNode *value;
-} VarDeclNode;
+} StmtVarDeclNode;
 
 typedef struct {
     StmtNode header;

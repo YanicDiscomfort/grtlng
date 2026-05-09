@@ -17,7 +17,7 @@ Interpreter interpreter;
 double interpretNumExpr(ExprNode *expr) {
     switch (expr->type) {
         case EXPR_UNARY_EXPR: {
-            UnaryExprNode *node = (UnaryExprNode*) expr;
+            ExprUnaryNode *node = (ExprUnaryNode*) expr;
             switch (node->operator) {
                 case TOKEN_MINUS:
                     return -interpretNumExpr(node->right);
@@ -27,7 +27,7 @@ double interpretNumExpr(ExprNode *expr) {
         } break;
 
         case EXPR_BINARY_EXPR: {
-            BinaryExprNode *node = (BinaryExprNode*) expr;
+            ExprBinaryNode *node = (ExprBinaryNode*) expr;
             switch (node->operator) {
                 case TOKEN_PLUS:
                     return interpretNumExpr(node->left) + interpretNumExpr(node->right);
@@ -43,7 +43,7 @@ double interpretNumExpr(ExprNode *expr) {
             break;
 
         case EXPR_NUMBER:
-            return ((NumberNode*) expr)->value;
+            return ((ExprNumberNode*) expr)->value;
 
         case EXPR_VAR:
             break;

@@ -6,7 +6,7 @@
 
 void printExpr(ExprNode* expr);
 
-void printUnary(UnaryExprNode* expr) {
+void printUnary(ExprUnaryNode* expr) {
     switch (expr->operator) {
         case TOKEN_MINUS:
             printf(" - ");
@@ -24,7 +24,7 @@ void printUnary(UnaryExprNode* expr) {
     printExpr(expr->right);
 }
 
-void printBinary(BinaryExprNode *expr) {
+void printBinary(ExprBinaryNode *expr) {
     printExpr(expr->left);
 
     switch (expr->operator) {
@@ -52,19 +52,19 @@ void printExpr(ExprNode *expr) {
     switch (expr->type) {
 
         case EXPR_UNARY_EXPR:
-            printUnary((UnaryExprNode*) expr);
+            printUnary((ExprUnaryNode*) expr);
             break;
 
         case EXPR_BINARY_EXPR:
-            printBinary((BinaryExprNode*) expr);
+            printBinary((ExprBinaryNode*) expr);
             break;
 
         case EXPR_NUMBER:
-            printf("%f", ((NumberNode*) expr)->value);
+            printf("%f", ((ExprNumberNode*) expr)->value);
             break;
 
         case EXPR_VAR:
-            printf("%s", ((VarAccessNode*) expr)->name);
+            printf("%s", ((ExprVarNode*) expr)->name);
             break;
 
         default:
@@ -74,7 +74,7 @@ void printExpr(ExprNode *expr) {
 
 }
 
-void printVarDec(VarDeclNode *stmt) {
+void printVarDec(StmtVarDeclNode *stmt) {
     printf("Declare Variable '%s' of type %s ", stmt->name, getTokenType(stmt->varType));
     if (stmt->value == nullptr) printf("without value");
     else {
@@ -91,7 +91,7 @@ void printStmt(StmtNode *stmt) {
             printExpr(((StmtExprNode*)stmt)->expr);
             break;
         case STMT_VAR_DEC:
-            printVarDec((VarDeclNode*) stmt);
+            printVarDec((StmtVarDeclNode*) stmt);
             break;
         default:
             fprintf(stderr, "Unhandled Statement Node type: %d\n", stmt->type);
