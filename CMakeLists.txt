@@ -28,6 +28,8 @@ add_executable(grtcmp src/main.c
         src/debug/debugInfos.h
         src/interpret/value.c
         src/interpret/value.h
+        src/util/HashMap.c
+        src/util/HashMap.h
 )
 
 target_compile_options(grtcmp

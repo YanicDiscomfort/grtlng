@@ -12,5 +12,3 @@ typedef struct {
         i16 i16;
     } value;
 } Value;
-
-uint32_t hashString(const char* key);
