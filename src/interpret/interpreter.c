@@ -133,6 +133,7 @@ void interpret(StmtNode *stmt) {
     switch (stmt->type) {
         case STMT_EXPR:
             interpretExpr(((StmtExprNode*) stmt)->expr);
+            printf("\n");
             break;
         case STMT_VAR_DEC: {
             StmtVarDeclNode *node = (StmtVarDeclNode*) stmt;
@@ -154,6 +155,5 @@ void interpretProgram(ArrayList *program) {
     printf("========== INTERPRETER OUTPUT ==========\n");
     for (u32 i = 0; i < program->size; i++) {
         interpret(ArrayListRead(program, i, StmtNode*));
-        printf("\n");
     }
 }
