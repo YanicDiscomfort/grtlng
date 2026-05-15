@@ -7,8 +7,5 @@ typedef enum {
 } ValueTypes;
 
 typedef struct {
-    ValueTypes type;
-    union {
-        i16 i16;
-    } value;
+    f64 value;
 } Value;

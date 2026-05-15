@@ -7,14 +7,55 @@
 
 #include "../parser.h"
 #include "value.h"
+#include "../util/HashMap.h"
+
+typedef struct Environment {
+    struct Environment *enclosing;
+    HashMap *vars;
+} Environment;
 
 typedef struct {
-
+    Environment *env;
 } Interpreter;
 
-Interpreter interpreter;
+Interpreter interpreter = {
+    nullptr
+};
 
-double interpretNumExpr(ExprNode *expr) {
+void environmentNew() {
+    Environment *env = malloc(sizeof(Environment));
+
+    env->enclosing = interpreter.env;
+    env->vars = malloc(sizeof(HashMap));
+
+    HashMapInit(env->vars, sizeof(Value));
+
+    interpreter.env = env;
+}
+
+void createVar(char *name, const Value *value) {
+    if (!HashMapSet(interpreter.env->vars, name, value)) {
+        fprintf(stderr, "Fatal Interpreter Error: Variable \"%s\" already exists on declaration", name);
+    }
+}
+
+void setVar(char *name, const Value *value) {
+    if (HashMapSet(interpreter.env->vars, name, value)) {
+        fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"", name);
+    }
+}
+
+Value getVar(char *name) {
+    Value val;
+    if (!HashMapGet(interpreter.env->vars, name, &val)) {
+        fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"", name);
+    }
+
+    return val;
+}
+
+
+f64 interpretNumExpr(ExprNode *expr) {
     switch (expr->type) {
         case EXPR_UNARY_EXPR: {
             ExprUnaryNode *node = (ExprUnaryNode*) expr;
@@ -46,7 +87,7 @@ double interpretNumExpr(ExprNode *expr) {
             return ((ExprNumberNode*) expr)->value;
 
         case EXPR_VAR:
-            break;
+            return getVar(((ExprVarNode*) expr)->name).value;
 
         default:
             fprintf(stderr, "Non-expression node in expression AST: %d\n", expr->type);
@@ -64,6 +105,24 @@ void interpretExpr(ExprNode *expr) {
         case EXPR_VAR:
             printf("%f", interpretNumExpr(expr));
             break;
+        case EXPR_VAR_ASSIGN: {
+            ExprVarAssignNode *node = (ExprVarAssignNode*) expr;
+            switch (node->target->type) {
+                case EXPR_VAR: {
+                    ExprVarNode *target = (ExprVarNode*) node->target;
+                    Value val = {interpretNumExpr(node->value)};
+                    setVar(target->name, &val);
+                    break;
+                }
+                default:
+                    INTERN_ERROR_LOCATION();
+                    fprintf(stderr, "Tried assigning to non-variable: %d", node->target->type);
+                    exit(1);
+            }
+
+            break;
+        }
+
         default:
             fprintf(stderr, "Unhandled Expression Node type: %d", expr->type);
     }
@@ -75,8 +134,12 @@ void interpret(StmtNode *stmt) {
         case STMT_EXPR:
             interpretExpr(((StmtExprNode*) stmt)->expr);
             break;
-        case STMT_VAR_DEC:
+        case STMT_VAR_DEC: {
+            StmtVarDeclNode *node = (StmtVarDeclNode*) stmt;
+            Value val = {interpretNumExpr(node->value)};
+            createVar(node->name, &val);
             break;
+        }
         default:
             fprintf(stderr, "Unhandled Statement Node type: %d", stmt->type);
     }
@@ -84,6 +147,9 @@ void interpret(StmtNode *stmt) {
 
 void interpretProgram(ArrayList *program) {
     usleep(100000);
+
+    // create starting environment
+    environmentNew();
 
     printf("========== INTERPRETER OUTPUT ==========\n");
     for (u32 i = 0; i < program->size; i++) {
