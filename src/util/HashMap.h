@@ -1,6 +1,18 @@
 #pragma once
-#include "ArrayList.h"
+
+#include <stddef.h>
+
+#include "../global.h"
 
 typedef struct {
-    ArrayList *values;
+    u16 capacity, count;
+    u16 valueSize;
+    void *values;
 } HashMap;
+
+void HashMapInit(HashMap *map, size_t valueSize);
+void HashMapFree(HashMap *map);
+
+bool HashMapSet(HashMap *map, char *key, const void *value);
+bool HashMapGet(const HashMap *map, const char *key, void *value);
+bool HashMapHas(HashMap *map, char *key);
