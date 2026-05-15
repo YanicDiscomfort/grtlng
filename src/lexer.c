@@ -130,7 +130,7 @@ Token string(Lexer *lexer) {
 }
 
 Token checkKeyword(const Lexer *lexer, const u16 start, const char *remaining, TokenType type) {
-    u16 len = strlen(remaining);
+    const u16 len = strlen(remaining);
     if (len + start == lexer->head - lexer->base && memcmp(remaining, &lexer->source[lexer->base + start], len) == 0) {
         return (Token) {type, lexer->line, lexer->base, nullptr};
     }
@@ -194,7 +194,7 @@ Token scanToken(Lexer* lexer) {
 
     if (isAtEnd(lexer)) return noDataToken(lexer, TOKEN_EOF);
 
-    char c = advance(lexer);
+    const char c = advance(lexer);
 
     switch (c) {
 

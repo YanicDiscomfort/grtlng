@@ -51,5 +51,5 @@ void *ArrayListGet(const ArrayList *list, const u32 index) {
         exit(1);
     }
 
-    return list->elements + (index * list->elementSize);
+    return list->elements + index * list->elementSize;
 }

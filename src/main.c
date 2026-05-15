@@ -65,7 +65,7 @@ int main(const int argc, char* argv[]) {
 #endif
 
     Parser parser;
-    ParseResult ast = parseAll(&parser, tokens, lexer.source);
+    const ParseResult ast = parseAll(&parser, tokens, lexer.source);
 
     if (parser.hadError) return 1;
 #ifdef DEBUG_PRINT_AST

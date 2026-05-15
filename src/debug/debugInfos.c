@@ -13,7 +13,7 @@ bool bHasFailed = false;
 void populate_table() {
     if (bHasFailed) return;
 
-    TextFile file = textfileRead("/home/gabriel/CLionProjects/language/src/lexer.h");
+    const TextFile file = textfileRead("/home/gabriel/CLionProjects/language/src/lexer.h");
 
     // look for the enum
     u32 start;
