@@ -175,7 +175,13 @@ void interpret(StmtNode *stmt) {
             break;
         case STMT_VAR_DEC: {
             StmtVarDeclNode *node = (StmtVarDeclNode*) stmt;
-            Value val = {interpretNumExpr(node->value)};
+
+            Value val;
+
+            if (node->value != nullptr) {
+                val.value = interpretNumExpr(node->value);
+            }
+
             createVar(node->name, &val);
             break;
         }
