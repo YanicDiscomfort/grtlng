@@ -222,6 +222,7 @@ ExprNode *variable(Parser *parser) {
 /*
  * An assignment acts as an expression which also has a side effect.
  * The value of the expression is the same as the value assigned to the variable.
+ * E.g. 5 + (a = 5) == 10
  */
 ExprNode *assignment(Parser *parser, ExprNode *left) {
     ExprVarAssignNode *node = ALLOC_NODE(ExprVarAssignNode);
