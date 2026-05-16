@@ -166,12 +166,13 @@ static void advance(Parser *parser) {
     }
 }
 
-void consume(Parser *parser, TokenType type, const char *message) {
+bool consume(Parser *parser, TokenType type, const char *message) {
     if (parser->current.type == type) {
         if (!isAtEnd(parser)) advance(parser);
-        return;
+        return true;
     }
     expectedGotInstead(parser, message, type, parser->current.type);
+    return false;
 }
 
 static bool match(Parser *parser, TokenType type) {
@@ -208,7 +209,9 @@ StmtNode *varDeclStmt(Parser *parser) {
     node->varType = parser->previous.type;
     node->header.type = STMT_VAR_DEC;
 
-    consume(parser, TOKEN_IDENTIFIER, " after variable type");
+    if (!consume(parser, TOKEN_IDENTIFIER, " after variable type")) {
+        return nullptr;
+    }
 
     if (match(parser, TOKEN_LEFT_PAREN)) {
         parseError(parser, "Unexpected '(' in local variable declaration");
