@@ -123,7 +123,7 @@ bool check(const Parser *parser, TokenType type) {
     SSSS      T     A   A     T     EEEEE   M   M   EEEEE   N   N     T     SSSS
  */
 
-bool isVarIdent(Parser *parser) {
+bool isTypeIdent(Parser *parser) {
     constexpr TokenType types[] = {TOKEN_I16, TOKEN_I32, TOKEN_U16, TOKEN_U32};
 
     for (u64 i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
@@ -131,16 +131,6 @@ bool isVarIdent(Parser *parser) {
     }
 
     return false;
-}
-
-StmtNode *exprStmt(Parser *parser) {
-    StmtExprNode *node = ALLOC_NODE(StmtExprNode);
-    node->header.type = STMT_EXPR;
-
-    node->expr = parseExpr(parser, PREC_NONE);
-    consume(parser, TOKEN_SEMICOLON, " after Expression");
-
-    return (StmtNode*) node;
 }
 
 StmtNode *varDeclStmt(Parser *parser) {
@@ -167,6 +157,15 @@ StmtNode *varDeclStmt(Parser *parser) {
     return (StmtNode*) node;
 }
 
+StmtNode *exprStmt(Parser *parser) {
+    StmtExprNode *node = ALLOC_NODE(StmtExprNode);
+    node->header.type = STMT_EXPR;
+
+    node->expr = parseExpr(parser, PREC_NONE);
+    consume(parser, TOKEN_SEMICOLON, " after Expression");
+
+    return (StmtNode*) node;
+}
 StmtNode *parseStmt(Parser *parser) {
     StmtNode* node;
     if (isVarIdent(parser)) node = varDeclStmt(parser);
