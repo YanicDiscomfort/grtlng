@@ -10,6 +10,8 @@ typedef struct {
     ArrayList *tree;
 } ParseResult;
 
+struct Scope;
+
 typedef struct {
     ParseResult program;
     ArrayList *Tokens;
@@ -17,6 +19,7 @@ typedef struct {
     Token current, previous;
     bool hadError, panicMode;
     const char *source;
+    struct Scope *currentScope;
 } Parser;
 
 
@@ -69,6 +72,7 @@ typedef enum {
     STMT_VAR_DEC,
     STMT_VAR_ASSIGN,
     STMT_EXPR,
+    STMT_BLOCK,
 } StmtNodeType;
 
 typedef struct {
@@ -88,7 +92,9 @@ typedef struct {
     ExprNode *expr;
 } StmtExprNode;
 
-
-
+typedef struct {
+    StmtNode header;
+    ArrayList *content;
+} StmtBlockNode;
 
 ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source);

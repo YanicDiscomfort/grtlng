@@ -1,8 +1,11 @@
 #include "parser.h"
 
+#include <stdlib.h>
+
 #include "error.h"
 
 #include "debug/debugInfos.h"
+#include "util/HashMap.h"
 
 #define ALLOC_NODE(type) (ArenaAlloc(parser->program.data, sizeof(type)))
 
@@ -22,10 +25,71 @@ typedef struct {
     ExprPrecedence precedence;
 } ParseRule;
 
+typedef struct Scope {
+    struct Scope *enclosing;
+    HashMap variables;
+} Scope;
+
+typedef struct {
+    TokenType type;
+} Variable;
+
 static void advance(Parser* parser);
 void consume(Parser *parser, TokenType type, const char *message);
 static bool match(Parser *parser, TokenType type);
 bool check (const Parser *parser, TokenType type);
+
+/*
+     SSSS     CCC    OOO    PPPP     III    N   N    GGG
+    S        C      O   O   P   P    III    NN  N   G
+     SSS    C       O   O   PPPP     III    N N N   G  GG
+        S    C      O   O   P        III    N  NN   G   G
+    SSSS      CCC    OOO    P        III    N   N    GGG
+ */
+
+void beginScope(Parser *parser) {
+    // we actually malloc Scopes so we can properly free them when we don't need them any more
+    Scope *new = malloc(sizeof(Scope));
+
+    new->enclosing = parser->currentScope;
+    HashMapInit(&new->variables, sizeof(Variable));
+
+    parser->currentScope = new;
+}
+
+void endScope(Parser *parser) {
+    Scope *previous = parser->currentScope->enclosing;
+
+    HashMapFree(&parser->currentScope->variables);
+    free(parser->currentScope);
+
+    parser->currentScope = previous;
+}
+
+static void createVar(Parser *parser, char *name, Variable var) {
+    HashMapSet(&parser->currentScope->variables, name, &var);
+}
+
+bool varExists(const Parser *parser, char* name) {
+    Scope *scope = parser->currentScope;
+
+    while (true) {
+        // it exists
+        if (HashMapHas(&scope->variables, name)) return true;
+
+        // it doesnt exist
+        if (scope->enclosing == nullptr) break;
+
+        // keep iterating
+        scope = scope->enclosing;
+    }
+
+    return false;
+}
+
+bool varInCurrentScope(const Parser *parser, char* name) {
+    return HashMapHas(&parser->currentScope->variables, name);
+}
 
 ParseRule getRule(TokenType token);
 
@@ -47,6 +111,9 @@ ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
     parser->panicMode = false;
 
     parser->source = source;
+
+    parser->currentScope = nullptr;
+    beginScope(parser);
 
     advance(parser);
 
@@ -143,6 +210,11 @@ StmtNode *varDeclStmt(Parser *parser) {
     node->header.type = STMT_VAR_DEC;
     node->name = parser->previous.data;
 
+    Variable var = {node->varType};
+
+    if (varInCurrentScope(parser, node->name)) parseError(parser, "Variable \"%s\" already declared in current scope", node->name);
+    else createVar(parser, node->name, var);
+
 
     node->value = nullptr;
 
@@ -166,9 +238,34 @@ StmtNode *exprStmt(Parser *parser) {
 
     return (StmtNode*) node;
 }
+
+StmtNode *blockStmt(Parser *parser) {
+
+    StmtBlockNode *node = ALLOC_NODE(StmtBlockNode);
+
+    node->header.type = STMT_BLOCK;
+    node->content = ArrayListNew(sizeof(StmtNode*));
+
+    beginScope(parser);
+
+    while (!match(parser, TOKEN_RIGHT_BRACE)) {
+        if (match(parser, TOKEN_EOF)) parseError(parser, "Unterminated block");
+        StmtNode *next;
+
+        if (isTypeIdent(parser)) next = varDeclStmt(parser);
+        else next = parseStmt(parser);
+        ArrayListAdd(node->content, &next);
+    }
+
+    endScope(parser);
+
+    return (StmtNode*) node;
+
+}
+
 StmtNode *parseStmt(Parser *parser) {
     StmtNode* node;
-    if (isVarIdent(parser)) node = varDeclStmt(parser);
+    if (match(parser, TOKEN_LEFT_BRACE)) node = blockStmt(parser);
     else node = exprStmt(parser);
 
     if (parser->panicMode) synchronise(parser);
@@ -230,6 +327,11 @@ ExprNode *variable(Parser *parser) {
     ExprVarNode *node = ALLOC_NODE(ExprVarNode);
     node->header.type = EXPR_VAR;
     node->name = parser->previous.data;
+
+    if (!varExists(parser, node->name)) {
+        parseError(parser, "Unknown variable \"%s\"", node->name);
+    }
+
     return (ExprNode*) node;
 }
 

@@ -22,7 +22,7 @@ Interpreter interpreter = {
     nullptr
 };
 
-void environmentNew() {
+void startEnvironment() {
     Environment *env = malloc(sizeof(Environment));
 
     env->enclosing = interpreter.env;
@@ -33,25 +33,63 @@ void environmentNew() {
     interpreter.env = env;
 }
 
+void endEnvironment() {
+    Environment *old = interpreter.env;
+
+    interpreter.env = old->enclosing;
+
+    HashMapFree(old->vars);
+    free(old);
+}
+
 static void createVar(char *name, const Value *value) {
     if (!HashMapSet(interpreter.env->vars, name, value)) {
-        fprintf(stderr, "Fatal Interpreter Error: Variable \"%s\" already exists on declaration", name);
+        fprintf(stderr, "Fatal Interpreter Error: Variable \"%s\" already exists on declaration\n", name);
+        exit(1);
     }
 }
 
 void setVar(char *name, const Value *value) {
-    if (HashMapSet(interpreter.env->vars, name, value)) {
-        fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"", name);
+    Environment *env = interpreter.env;
+    while (true) {
+        if (!HashMapHas(env->vars, name)) {
+            if (env->enclosing == nullptr) break;
+
+            env = env->enclosing;
+            continue;
+        }
+
+        HashMapSet(env->vars, name, value);
+        return;
+
     }
+
+    fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"\n", name);
+    exit(1);
+
 }
 
 Value getVar(char *name) {
     Value val;
-    if (!HashMapGet(interpreter.env->vars, name, &val)) {
-        fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"", name);
+
+    Environment *env = interpreter.env;
+
+    while (true) {
+        if (!HashMapHas(env->vars, name)) {
+            if (env->enclosing == nullptr) break;
+
+            env = env->enclosing;
+            continue;
+        }
+
+        HashMapGet(env->vars, name, &val);
+        return val;
+
     }
 
-    return val;
+    fprintf(stderr, "Fatal Interpreter Error: Unknown Variable \"%s\"\n", name);
+    exit(1);
+
 }
 
 
@@ -141,6 +179,17 @@ void interpret(StmtNode *stmt) {
             createVar(node->name, &val);
             break;
         }
+        case STMT_BLOCK: {
+            StmtBlockNode *block = (StmtBlockNode*) stmt;
+            startEnvironment();
+
+            for (u32 i = 0; i < block->content->size; i++) {
+                interpret(ArrayListRead(block->content, i, StmtNode*));
+            }
+
+            endEnvironment();
+            break;
+        }
         default:
             fprintf(stderr, "Unhandled Statement Node type: %d [interpret/interpreter.c]\n", stmt->type);
     }
@@ -150,7 +199,7 @@ void interpretProgram(ArrayList *program) {
     usleep(100000);
 
     // create starting environment
-    environmentNew();
+    startEnvironment();
 
     printf("========== INTERPRETER OUTPUT ==========\n");
     for (u32 i = 0; i < program->size; i++) {

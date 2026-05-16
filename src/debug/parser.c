@@ -94,6 +94,14 @@ void printVarDec(StmtVarDeclNode *stmt) {
 
 }
 
+void printBlock(StmtBlockNode *block) {
+    printf("Begin block\n");
+    for (u32 i = 0; i < block->content->size; i++) {
+        printStmt(ArrayListRead(block->content, i, StmtNode*));
+    }
+    printf("End block");
+}
+
 void printStmt(StmtNode *stmt) {
     switch (stmt->type) {
         case STMT_EXPR:
@@ -103,7 +111,11 @@ void printStmt(StmtNode *stmt) {
         case STMT_VAR_DEC:
             printVarDec((StmtVarDeclNode*) stmt);
             break;
+        case STMT_BLOCK:
+            printBlock((StmtBlockNode*) stmt);
+            break;
         default:
             fprintf(stderr, "Unhandled Statement Node type: %d [debug/parser.c]\n", stmt->type);
     }
+    putchar('\n');
 }
