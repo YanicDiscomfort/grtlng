@@ -8,14 +8,14 @@
 #include "lexer.h"
 #include "debug/debugInfos.h"
 
-void printErrorLine(Parser* parser, const Token *token) {
+void printErrorLine(const char *source, const Token *token) {
     u32 start = token->position;
-    while (start > 0 && parser->source[start - 1] != '\n') start--;
+    while (start > 0 && source[start - 1] != '\n') start--;
 
     u32 end = token->position;
     for (u8 i = 20; i > 0; i--) {
         end++;
-        if (parser->source[end] == '\n' || parser->source[end] == '\0') break;
+        if (source[end] == '\n' || source[end] == '\0') break;
     }
 
     const u32 range = end - start;
@@ -24,7 +24,7 @@ void printErrorLine(Parser* parser, const Token *token) {
     sprintf(lineString, "%d", token->line);
 
     fprintf(stderr, "[%s]   ", lineString);
-    fprintf(stderr, "%.*s", range, &parser->source[start]);
+    fprintf(stderr, "%.*s", range, &source[start]);
 
     if (token->position + 20 == end) fprintf(stderr, "...");
 
@@ -48,7 +48,7 @@ void parseErrorAt(Parser *parser, const Token* token, const char* message, va_li
 
 
     // print offending line
-    printErrorLine(parser, token);
+    printErrorLine(parser->source, token);
 
 }
 
