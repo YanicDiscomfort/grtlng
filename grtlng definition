@@ -9,7 +9,6 @@ block          → "{" ( declaration | statement )* "}" ;
 
 statement      → exprStmt
                | block ;
-               | exprStatement
 
 exprStmt       → expression ";" ;
 
