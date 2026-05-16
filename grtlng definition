@@ -24,7 +24,11 @@ ALPHA          → "a" ... "z" | "A" ... "Z" | "_" ;
 DIGIT          → "0" ... "9" ;
 
 All global function and variable declarations come into existence at the start of the source file, no matter where they are actually listed in the source file.
+An exception to this are other global variables, which may only reference functions and variables declared before them in the source file.
+
 Local variables come into existence at the point where they are declared.
+
 Variables may shadow other variables from enclosing scopes.
-If a Variable shadows another variable from an enclosing scope, it may not use that variable's value in it's own declaration.
+If a Variable shadows another variable from an enclosing scope, it may not use that variable's value in its own declaration.
+
 Functions may only be declared in the global scope.
