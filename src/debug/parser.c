@@ -78,7 +78,7 @@ void printExpr(ExprNode *expr) {
             break;
 
         default:
-            fprintf(stderr, "Unhandled Expression Node type: %d\n", expr->type);
+            fprintf(stderr, "Unhandled Expression Node type: %d [debug/parser.c]\n", expr->type);
     }
     printf(")");
 
@@ -104,6 +104,6 @@ void printStmt(StmtNode *stmt) {
             printVarDec((StmtVarDeclNode*) stmt);
             break;
         default:
-            fprintf(stderr, "Unhandled Statement Node type: %d\n", stmt->type);
+            fprintf(stderr, "Unhandled Statement Node type: %d [debug/parser.c]\n", stmt->type);
     }
 }
