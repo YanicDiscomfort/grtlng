@@ -33,7 +33,7 @@ void environmentNew() {
     interpreter.env = env;
 }
 
-void createVar(char *name, const Value *value) {
+static void createVar(char *name, const Value *value) {
     if (!HashMapSet(interpreter.env->vars, name, value)) {
         fprintf(stderr, "Fatal Interpreter Error: Variable \"%s\" already exists on declaration", name);
     }
