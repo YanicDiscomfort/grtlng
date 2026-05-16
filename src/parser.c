@@ -123,8 +123,6 @@ ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
         ArrayListAdd(parser->program.tree, &expr);
     }
 
-    consume(parser, TOKEN_EOF, "Expected end of file");
-
     return parser->program;
 }
 
