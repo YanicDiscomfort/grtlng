@@ -216,14 +216,15 @@ StmtNode *varDeclStmt(Parser *parser) {
     if (match(parser, TOKEN_LEFT_PAREN)) {
         parseError(parser, "Unexpected '(' in local variable declaration");
         fprintf(stderr, "Hint: Function declarations are only permitted in the global scope\n\n\n");
-    } else {
-        node->name = parser->previous.data;
-
-        Variable var = {node->varType};
-
-        if (varInCurrentScope(parser, node->name)) parseError(parser, "Variable \"%s\" already declared in current scope", node->name);
-        else createVar(parser, node->name, var);
+        return nullptr;
     }
+
+    node->name = parser->previous.data;
+
+    Variable var = {node->varType};
+
+    if (varInCurrentScope(parser, node->name)) parseError(parser, "Variable \"%s\" already declared in current scope", node->name);
+    else createVar(parser, node->name, var);
 
     node->value = nullptr;
 
