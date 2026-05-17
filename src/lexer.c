@@ -153,6 +153,7 @@ Token keyword(const Lexer *lexer) {
             default:
         }
             break;
+        case 'v': return checkKeyword(lexer, 1, "oid", TOKEN_VOID);
         default:
     }
     return (Token) {TOKEN_IDENTIFIER, lexer->line, lexer->base, nullptr};
