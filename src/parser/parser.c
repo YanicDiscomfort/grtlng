@@ -11,10 +11,10 @@ ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
     /*
      * Plan:
      * parse entire source file for declarations
-     * put variable declarations at the beginning of the AST
+     * put variable declarations at the beginning of the AST (now called init phase)
      * put function declarations into own ArrayList (name, starting token)
      * parse each function
-     *
+     * put call to main() at the end of init phase AST
      */
     parser->Tokens = tokens;
     parser->token = 0;
