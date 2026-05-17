@@ -189,7 +189,7 @@ void interpret(StmtNode *stmt) {
             StmtBlockNode *block = (StmtBlockNode*) stmt;
             startEnvironment();
 
-            for (u32 i = 0; i < block->content->size; i++) {
+            for (u32 i = 0; i < block->content->length; i++) {
                 interpret(ArrayListRead(block->content, i, StmtNode*));
             }
 
@@ -208,7 +208,7 @@ void interpretProgram(ArrayList *program) {
     startEnvironment();
 
     printf("========== INTERPRETER OUTPUT ==========\n");
-    for (u32 i = 0; i < program->size; i++) {
+    for (u32 i = 0; i < program->length; i++) {
         interpret(ArrayListRead(program, i, StmtNode*));
     }
 }

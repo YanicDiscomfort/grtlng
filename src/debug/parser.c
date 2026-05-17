@@ -96,7 +96,7 @@ void printVarDec(StmtVarDeclNode *stmt) {
 
 void printBlock(StmtBlockNode *block) {
     printf("Begin block\n");
-    for (u32 i = 0; i < block->content->size; i++) {
+    for (u32 i = 0; i < block->content->length; i++) {
         printStmt(ArrayListRead(block->content, i, StmtNode*));
     }
     printf("End block");

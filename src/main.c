@@ -51,7 +51,7 @@ int main(const int argc, char* argv[]) {
 
 #ifdef DEBUG_PRINT_TOKENS
 
-    for (u32 i = 0; i < tokens->size; i++) {
+    for (u32 i = 0; i < tokens->length; i++) {
         const Token tok = ArrayListRead(tokens, i, Token); // get data
         printToken(tok);
     }
@@ -63,7 +63,7 @@ int main(const int argc, char* argv[]) {
     char actualPath[PATH_MAX + 1];
     realpath(argv[argc - 1], actualPath);
 
-    printf("%d Tokens in %s\n\n", tokens->size, actualPath);
+    printf("%d Tokens in %s\n\n", tokens->length, actualPath);
 
 #endif
 
@@ -73,7 +73,7 @@ int main(const int argc, char* argv[]) {
     if (parser.hadError) return 1;
 #ifdef DEBUG_PRINT_AST
 
-    for (u32 i = 0; i < ast.tree->size; i++) {
+    for (u32 i = 0; i < ast.tree->length; i++) {
         printStmt(ArrayListRead(ast.tree, i, StmtNode*));
         printf("\n");
     }

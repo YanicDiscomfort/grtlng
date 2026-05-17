@@ -11,7 +11,7 @@ ArrayList *ArrayListNew(const size_t elementSize) {
     ArrayList *list = malloc(sizeof(ArrayList));
 
     list->capacity = 0;
-    list->size = 0;
+    list->length = 0;
 
     list->elementSize = elementSize;
 
@@ -26,7 +26,7 @@ void ArrayListFree(ArrayList *list) {
 }
 
 void ArrayListAdd(ArrayList *list, const void *element) {
-    if (list->size + 1 > list->capacity) {
+    if (list->length + 1 > list->capacity) {
         list->capacity = GROW_CAPACITY(list->capacity);
         void* new = GROW_ARRAY(list->elementSize, list->elements, list->capacity);
         if (new == nullptr) {
@@ -38,16 +38,16 @@ void ArrayListAdd(ArrayList *list, const void *element) {
     }
 
 
-    void *dest = list->elements + list->elementSize * list->size;
-    list->size++;
+    void *dest = list->elements + list->elementSize * list->length;
+    list->length++;
 
     memcpy(dest, element, list->elementSize);
 
 }
 void *ArrayListGet(const ArrayList *list, const u32 index) {
-    if (index >= list->size) {
+    if (index >= list->length) {
         INTERN_ERROR_LOCATION();
-        fprintf(stderr, "Tried accessing list with size of %d at index %d\n", list->size, index);
+        fprintf(stderr, "Tried accessing list with length of %d at index %d\n", list->length, index);
         exit(1);
     }
 

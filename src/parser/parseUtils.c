@@ -11,14 +11,14 @@
  */
 
 static bool isAtEnd(const Parser *parser) {
-    return parser->Tokens->size <= parser->token;
+    return parser->Tokens->length <= parser->token;
 }
 
 void advance(Parser *parser) {
     parser->previous = parser->current;
     while (true) {
         if (isAtEnd(parser)) {
-            parser->current = ArrayListRead(parser->Tokens, parser->Tokens->size - 1, Token);
+            parser->current = ArrayListRead(parser->Tokens, parser->Tokens->length - 1, Token);
         } else {
             parser->current = ArrayListRead(parser->Tokens, parser->token, Token);
             parser->token++;

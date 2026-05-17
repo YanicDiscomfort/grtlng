@@ -5,7 +5,7 @@
 #define ArrayListRead(list, index, type) (*(type*)ArrayListGet(list, index))
 
 typedef struct {
-    u32 capacity, size;
+    u32 capacity, length;
     size_t elementSize;
     void* elements;
 } ArrayList;
