@@ -291,8 +291,6 @@ Token scanToken(Lexer* lexer) {
     if (isNum(c)) return number(lexer);
     if (c == '"') return string(lexer);
 
-    // check for keywords here
-
     if (isAlpha(c) || c == '_') return identifier(lexer);
 
     return errorToken(lexer, "Unexpected character.");
