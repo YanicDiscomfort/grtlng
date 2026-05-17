@@ -1,5 +1,10 @@
-i16 a = 5;
-a;
-
-i16 b = a - 3;
-a + b;
+{
+    i16 someVar = 19 + 5 / 7 + (2 * 4);
+    i16 other = someVar - 6;
+    someVar / other;
+    {
+        i16 someVar = 5;
+        someVar;
+    }
+    someVar;
+}

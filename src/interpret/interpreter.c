@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "../parser.h"
+#include "../parser/parser.h"
 #include "value.h"
 #include "../util/HashMap.h"
 

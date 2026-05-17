@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lexer.h"
-#include "parser.h"
+#include "parser/parser.h"
 
 void parseErrorAtCurrent(Parser *parser, const char* message, ...);
 void parseError(Parser *parser, const char* message, ...);

@@ -4,7 +4,7 @@
 #include <linux/limits.h>
 
 #include "lexer.h"
-#include "parser.h"
+#include "parser/parser.h"
 #include "debug/lexer.h"
 #include "debug/parser.h"
 #include "interpret/interpreter.h"

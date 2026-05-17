@@ -18,8 +18,8 @@ add_executable(grtcmp src/main.c
         src/error.h
         src/util/file-io/textfile.c
         src/util/file-io/textfile.h
-        src/parser.c
-        src/parser.h
+        src/parser/parser.c
+        src/parser/parser.h
         src/debug/parser.c
         src/debug/parser.h
         src/interpret/interpreter.c
@@ -30,6 +30,16 @@ add_executable(grtcmp src/main.c
         src/interpret/value.h
         src/util/HashMap.c
         src/util/HashMap.h
+        src/parser/globalScope.c
+        src/parser/globalScope.h
+        src/parser/parseUtils.c
+        src/parser/parseUtils.h
+        src/parser/expressions.c
+        src/parser/expressions.h
+        src/parser/scoping.c
+        src/parser/scoping.h
+        src/parser/statements.c
+        src/parser/statements.h
 )
 
 target_compile_options(grtcmp

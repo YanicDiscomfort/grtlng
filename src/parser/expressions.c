@@ -1,0 +1,173 @@
+#include "expressions.h"
+
+#include "parser.h"
+#include "scoping.h"
+#include "parseUtils.h"
+
+#include "../error.h"
+#include "../debug/debugInfos.h"
+
+/*
+    EEEEE   X   X   PPPP    RRRR    EEEEE    SSSS    SSSS    III     OOO    N   N    SSSS
+    E        X X    P   P   R   R   E       S       S        III    O   O   NN  N   S
+    EEEEE     X     PPPP    RRRR    EEEEE    SSS     SSS     III    O   O   N N N    SSS
+    E        X X    P       R  R    E           S       S    III    O   O   N  NN       S
+    EEEEE   X   X   P       R   R   EEEEE   SSSS    SSSS     III     OOO    N   N   SSSS
+ */
+
+ExprNode *exprBinary(Parser *parser, ExprNode *left) {
+    ExprBinaryNode *node = ALLOC_NODE(ExprBinaryNode);
+
+    node->header.type = EXPR_BINARY_EXPR;
+
+    node->operator = parser->previous.type;
+    node->left = left;
+
+    node->right = parseExprPrec(parser);
+
+    return (ExprNode*) node;
+
+}
+
+ExprNode *exprUnary(Parser *parser) {
+    ExprUnaryNode *node = ALLOC_NODE(ExprUnaryNode);
+
+    node->header.type = EXPR_UNARY_EXPR;
+    node->operator = parser->previous.type;
+
+    node->right = parseExprPrec(parser);
+
+    return (ExprNode*) node;
+}
+
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+static ExprNode *number(Parser *parser) {
+    ExprNumberNode *node = ALLOC_NODE(ExprNumberNode);
+
+    node->header.type = EXPR_NUMBER;
+    node->value = * (double*) parser->previous.data;
+
+    return (ExprNode*) node;
+}
+
+ExprNode *grouping(Parser *parser) {
+    ExprNode *node = parseExprPrec(parser);
+    consume(parser, TOKEN_RIGHT_PAREN, "");
+    return node;
+}
+
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+ExprNode *variable(Parser *parser) {
+    ExprVarNode *node = ALLOC_NODE(ExprVarNode);
+    node->header.type = EXPR_VAR;
+    node->name = parser->previous.data;
+
+    if (!varExists(parser, node->name)) {
+        parseError(parser, "Unknown variable \"%s\"", node->name);
+    }
+
+    return (ExprNode*) node;
+}
+
+
+/*
+ * An assignment acts as an expression which also has a side effect.
+ * The value of the expression is the same as the value assigned to the variable.
+ * E.g. 5 + (a = 5) == 10
+ */
+
+ExprNode *assignment(Parser *parser, ExprNode *left) {
+    ExprVarAssignNode *node = ALLOC_NODE(ExprVarAssignNode);
+
+    node->header.type = EXPR_VAR_ASSIGN;
+
+    // TODO: maybe its possible to mark the start of the l-value instead of the = on the error message?
+    if (left->type != EXPR_VAR) {
+        parseError(parser, "Invalid assignment target");
+    }
+
+    node->target = left;
+    node->value = parseExprPrecRight(parser);
+
+    return (ExprNode*) node;
+}
+
+
+ExprNode *parseExpr(Parser *parser, ExprPrecedence precedence) {
+    advance(parser);
+
+    const PrefixFn prefixRule = getRule(parser->previous.type).prefix;
+
+    if (prefixRule == nullptr) {
+
+        parseError(parser, "Tried starting (sub-) expression with invalid token: %s", getTokenSymbol(parser->previous.type));
+
+        return nullptr;
+    }
+
+    ExprNode *left = prefixRule(parser);
+
+    while (precedence < getRule(parser->current.type).precedence) {
+        advance(parser);
+        const InfixFn infixRule = getRule(parser->previous.type).infix;
+        left = infixRule(parser, left);
+    }
+
+    return left;
+
+}
+
+ExprNode *parseExprPrec(Parser *parser) {
+    return parseExpr(parser, getRule(parser->previous.type).precedence);
+}
+
+ExprNode *parseExprPrecRight(Parser *parser) {
+    return parseExpr(parser, getRule(parser->previous.type).precedence - 1);
+}
+
+
+ParseRule rules [TOKEN_LAST] = {
+    [TOKEN_EOF]             = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_ERROR]           = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_NUM]             = {number,      nullptr,    PREC_NONE       },
+    [TOKEN_STRING]          = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_SEMICOLON]       = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_LEFT_PAREN]      = {grouping,    nullptr,    PREC_NONE       },
+    [TOKEN_RIGHT_PAREN]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_LEFT_BRACE]      = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_RIGHT_BRACE]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_LEFT_BRACKET]    = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_RIGHT_BRACKET]   = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_PLUS]            = {nullptr,     exprBinary, PREC_SUM        },
+    [TOKEN_MINUS]           = {exprUnary,   exprBinary, PREC_SUM        },
+    [TOKEN_STAR]            = {nullptr,     exprBinary, PREC_PRODUCT    },
+    [TOKEN_SLASH]           = {nullptr,     exprBinary, PREC_PRODUCT    },
+    [TOKEN_PLUS_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_MINUS_EQUALS]    = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_STAR_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_SLASH_EQUALS]    = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_PLUS_PLUS]       = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_MINUS_MINUS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_AMP]             = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_PIPE]            = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_TILDE]           = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_AMP_AMP]         = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_PIPE_PIPE]       = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_AMP_EQUALS]      = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_PIPE_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_BANG]            = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_DOT]             = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_COMMA]           = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_MORE]            = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_LESS]            = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_EQUALS]          = {nullptr,     assignment, PREC_ASSIGNMENT },
+    [TOKEN_EQUALS_EQUALS]   = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_MORE_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_LESS_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_BANG_EQUALS]     = {nullptr,     nullptr,    PREC_NONE       },
+    [TOKEN_IDENTIFIER]      = {variable,    nullptr,    PREC_NONE       },
+};
+
+ParseRule getRule(const TokenType token) {
+    return rules[token];
+}

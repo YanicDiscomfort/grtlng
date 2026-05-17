@@ -1,13 +1,15 @@
 #pragma once
 
-#include "util/ArenaAllocator.h"
-#include "util/ArrayList.h"
+#include "../util/ArenaAllocator.h"
+#include "../util/ArrayList.h"
 
-#include "lexer.h"
+#include "../lexer.h"
+#include "../util/HashMap.h"
 
 typedef struct {
     ArenaAllocator* data;
     ArrayList *tree;
+    HashMap functions;
 } ParseResult;
 
 struct Scope;
@@ -15,7 +17,7 @@ struct Scope;
 typedef struct {
     ParseResult program;
     ArrayList *Tokens;
-    u16 token;
+    u32 token;
     Token current, previous;
     bool hadError, panicMode;
     const char *source;
@@ -70,7 +72,7 @@ typedef struct {
 
 typedef enum {
     STMT_VAR_DEC,
-    STMT_VAR_ASSIGN,
+    STMT_FUN_DEC,
     STMT_EXPR,
     STMT_BLOCK,
 } StmtNodeType;
@@ -96,5 +98,11 @@ typedef struct {
     StmtNode header;
     ArrayList *content;
 } StmtBlockNode;
+
+typedef struct {
+    StmtNode header;
+    char *name;
+    StmtBlockNode *body;
+} StmtFunction;
 
 ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source);
