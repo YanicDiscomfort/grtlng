@@ -65,7 +65,7 @@ ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
 
     // call main to finish init segment
     if (!HashMapHas(&parser->program.functions, "main")) {
-        fprintf(stderr, "Encountered error in program: No main function in program");
+        fprintf(stderr, "Encountered error in program: No main function in program\n");
         parser->hadError = true;
     } else {
         ExprCallNode *mainCall = ALLOC_NODE(ExprCallNode);
