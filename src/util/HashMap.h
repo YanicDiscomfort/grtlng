@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "../global.h"
+#include "ArrayList.h"
 
 typedef struct {
     u16 capacity, count;
@@ -16,3 +17,4 @@ void HashMapFree(HashMap *map);
 bool HashMapSet(HashMap *map, char *key, const void *value);
 bool HashMapGet(const HashMap *map, const char *key, void *value);
 bool HashMapHas(HashMap *map, char *key);
+ArrayList *HashMapAll(HashMap *map);

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ArrayList.h"
 #include "../global.h"
 
 #define LOAD_FACTOR 0.75
@@ -143,4 +144,18 @@ bool HashMapHas(HashMap *map, char *key) {
     Key *entry = getEntry(map->values, map->capacity, map->valueSize, key);
 
     return entry->name != nullptr;
+}
+
+
+ArrayList *HashMapAll(HashMap *map) {
+    ArrayList *contents = ArrayListNew(map->valueSize);
+    for (u16 i = 0; i < map->capacity; i++) {
+        Key *key = map->values + PACKET_SIZE * i;
+        // only copy non-empty values
+        if (key->name == nullptr) continue;
+
+        void *source = (void*) key + sizeof(Key);
+        ArrayListAdd(contents, source);
+    }
+    return contents;
 }
