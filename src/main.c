@@ -46,7 +46,7 @@ int main(const int argc, char* argv[]) {
 
     ArenaAllocator *tokenData = ArenaNew();
     Lexer lexer; //last argument must be source file
-    lexerInit(&lexer, argv[argc - 1], tokenData);
+    lexerInit(&lexer, compileFlags.sourcefile, tokenData);
     ArrayList *tokens = scanAll(&lexer);
 
 #ifdef DEBUG_PRINT_TOKENS
@@ -61,7 +61,7 @@ int main(const int argc, char* argv[]) {
 #ifdef DEBUG_TOKEN_COUNT
 
     char actualPath[PATH_MAX + 1];
-    realpath(argv[argc - 1], actualPath);
+    realpath(compileFlags.sourcefile, actualPath);
 
     printf("%d Tokens in %s\n\n", tokens->length, actualPath);
 
