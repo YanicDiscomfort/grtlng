@@ -2,4 +2,4 @@
 
 #include "../parser/parser.h"
 
-void printStmt(StmtNode *stmt);
+void printProgram(ParseResult program);

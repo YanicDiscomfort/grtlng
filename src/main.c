@@ -73,10 +73,7 @@ int main(const int argc, char* argv[]) {
     if (parser.hadError) return 1;
 #ifdef DEBUG_PRINT_AST
 
-    for (u32 i = 0; i < ast.tree->length; i++) {
-        printStmt(ArrayListRead(ast.tree, i, StmtNode*));
-        printf("\n");
-    }
+    printProgram(ast);
     printf("\n");
 
 #endif

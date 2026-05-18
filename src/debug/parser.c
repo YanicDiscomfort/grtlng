@@ -5,6 +5,7 @@
 #include "debugInfos.h"
 
 void printExpr(ExprNode* expr);
+void printStmt(StmtNode *stmt);
 
 void printUnary(ExprUnaryNode* expr) {
     switch (expr->operator) {
@@ -82,14 +83,14 @@ void printExpr(ExprNode *expr) {
             break;
 
         default:
-            fprintf(stderr, "Unhandled Expression Node type: %d [debug/parser.c]\n", expr->type);
+            fprintf(stderr, "    Unhandled Expression Node type: %d [debug/parser.c]\n", expr->type);
     }
     printf(")");
 
 }
 
 void printVarDec(StmtVarDeclNode *stmt) {
-    printf("Declare Variable '%s' of type %s ", stmt->name, getTokenType(stmt->varType));
+    printf("    Declare Variable '%s' of type %s ", stmt->name, getTokenType(stmt->varType));
     if (stmt->value == nullptr) printf("without value");
     else {
         printf("with value = ");
@@ -99,17 +100,17 @@ void printVarDec(StmtVarDeclNode *stmt) {
 }
 
 void printBlock(StmtBlockNode *block) {
-    printf("Begin block\n");
+    printf("    Begin block\n");
     for (u32 i = 0; i < block->content->length; i++) {
         printStmt(ArrayListRead(block->content, i, StmtNode*));
     }
-    printf("End block");
+    printf("    End block");
 }
 
 void printStmt(StmtNode *stmt) {
     switch (stmt->type) {
         case STMT_EXPR:
-            printf("[EXPR] ");
+            printf("    [EXPR] ");
             printExpr(((StmtExprNode*)stmt)->expr);
             break;
         case STMT_VAR_DEC:
@@ -119,7 +120,23 @@ void printStmt(StmtNode *stmt) {
             printBlock((StmtBlockNode*) stmt);
             break;
         default:
-            fprintf(stderr, "Unhandled Statement Node type: %d [debug/parser.c]\n", stmt->type);
+            fprintf(stderr, "    Unhandled Statement Node type: %d [debug/parser.c]\n", stmt->type);
     }
     putchar('\n');
+}
+
+void printProgram(ParseResult program) {
+    printf("init:\n");
+    for (u32 i = 0; i < program.tree->length; i++) {
+        printStmt(ArrayListRead(program.tree, i, StmtNode*));
+        printf("\n");
+    }
+
+    ArrayList *functions = HashMapAll(&program.functions);
+    for (u32 i = 0; i < functions->length; i++) {
+        StmtFunction current = ArrayListRead(functions, i, StmtFunction);
+        printf("%s:\n", current.name);
+        printBlock(current.body);
+        putchar('\n');
+    }
 }
