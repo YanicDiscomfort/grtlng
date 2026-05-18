@@ -26,7 +26,27 @@ ExprNode *exprBinary(Parser *parser, ExprNode *left) {
     node->right = parseExprPrec(parser);
 
     return (ExprNode*) node;
+}
 
+ExprNode *call(Parser *parser, ExprNode *left) {
+    if (parser->inGlobalPhase) {
+        parseError(parser, "No functions may be called during global variable initialisation");
+    }
+    ExprCallNode *node = ALLOC_NODE(ExprCallNode);
+
+    node->header.type = EXPR_CALL;
+
+    switch (left->type) {
+        case EXPR_VAR:
+            node->target = ((ExprVarNode*) left)->name;
+            break;
+        default:
+            parseError(parser, "Invalid assignment target");
+    }
+
+    consume(parser, TOKEN_RIGHT_PAREN, " after function arguments");
+
+    return (ExprNode*) node;
 }
 
 ExprNode *exprUnary(Parser *parser) {
@@ -51,7 +71,7 @@ static ExprNode *number(Parser *parser) {
 }
 
 ExprNode *grouping(Parser *parser) {
-    ExprNode *node = parseExprPrec(parser);
+    ExprNode *node = expression(parser);
     consume(parser, TOKEN_RIGHT_PAREN, "");
     return node;
 }
@@ -62,8 +82,8 @@ ExprNode *variable(Parser *parser) {
     node->header.type = EXPR_VAR;
     node->name = parser->previous.data;
 
-    if (!varExists(parser, node->name)) {
-        parseError(parser, "Unknown variable \"%s\"", node->name);
+    if (!varExists(parser, node->name) && !HashMapHas(&parser->program.functions, node->name)) {
+        parseError(parser, "Unknown variable or function identifier \"%s\"", node->name);
     }
 
     return (ExprNode*) node;
@@ -125,6 +145,10 @@ ExprNode *parseExprPrecRight(Parser *parser) {
     return parseExpr(parser, getRule(parser->previous.type).precedence - 1);
 }
 
+ExprNode *expression(Parser *parser) {
+    return parseExpr(parser, PREC_LIMIT);
+}
+
 
 ParseRule rules [TOKEN_LAST] = {
     [TOKEN_EOF]             = {nullptr,     nullptr,    PREC_NONE       },
@@ -132,7 +156,7 @@ ParseRule rules [TOKEN_LAST] = {
     [TOKEN_NUM]             = {number,      nullptr,    PREC_NONE       },
     [TOKEN_STRING]          = {nullptr,     nullptr,    PREC_NONE       },
     [TOKEN_SEMICOLON]       = {nullptr,     nullptr,    PREC_NONE       },
-    [TOKEN_LEFT_PAREN]      = {grouping,    nullptr,    PREC_NONE       },
+    [TOKEN_LEFT_PAREN]      = {grouping,    call,       PREC_CALL       },
     [TOKEN_RIGHT_PAREN]     = {nullptr,     nullptr,    PREC_NONE       },
     [TOKEN_LEFT_BRACE]      = {nullptr,     nullptr,    PREC_NONE       },
     [TOKEN_RIGHT_BRACE]     = {nullptr,     nullptr,    PREC_NONE       },

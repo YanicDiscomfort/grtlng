@@ -131,6 +131,23 @@ f64 interpretNumExpr(ExprNode *expr) {
         case EXPR_VAR:
             return getVar(((ExprVarNode*) expr)->name).value;
 
+        case EXPR_VAR_ASSIGN: {
+            ExprVarAssignNode *node = (ExprVarAssignNode*) expr;
+            switch (node->target->type) {
+                case EXPR_VAR: {
+                    ExprVarNode *target = (ExprVarNode*) node->target;
+                    Value val = {interpretNumExpr(node->value)};
+                    setVar(target->name, &val);
+                    return val.value;
+                }
+                default:
+                    INTERN_ERROR_LOCATION();
+                    fprintf(stderr, "Tried assigning to non-variable: %d", node->target->type);
+                    exit(1);
+            }
+        }
+
+
         default:
             fprintf(stderr, "Non-expression node in expression AST: %d\n", expr->type);
             exit(1);
@@ -147,30 +164,18 @@ void interpretExpr(ExprNode *expr) {
         case EXPR_VAR:
             printf("%f", interpretNumExpr(expr));
             break;
-        case EXPR_VAR_ASSIGN: {
-            ExprVarAssignNode *node = (ExprVarAssignNode*) expr;
-            switch (node->target->type) {
-                case EXPR_VAR: {
-                    ExprVarNode *target = (ExprVarNode*) node->target;
-                    Value val = {interpretNumExpr(node->value)};
-                    setVar(target->name, &val);
-                    break;
-                }
-                default:
-                    INTERN_ERROR_LOCATION();
-                    fprintf(stderr, "Tried assigning to non-variable: %d", node->target->type);
-                    exit(1);
-            }
-
+        case EXPR_VAR_ASSIGN:
+            interpretNumExpr(expr);
             break;
-        }
         case EXPR_CALL: {
             ExprCallNode *node = (ExprCallNode*) expr;
+
             StmtFunction function;
             HashMapGet(&interpreter.functions, node->target, &function);
-            StmtBlockNode *body = function.body;
 
+            StmtBlockNode *body = function.body;
             interpret((StmtNode*) body);
+
             break;
         }
 

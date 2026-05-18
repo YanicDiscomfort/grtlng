@@ -43,7 +43,7 @@ StmtNode *localVarDeclStmt(Parser *parser) {
 
     // if instant assignment
     if (match(parser, TOKEN_EQUALS)) {
-        node->value = parseExprPrecRight(parser);
+        node->value = expression(parser);
         consume(parser, TOKEN_SEMICOLON, " after variable assignment");
     } else {
         consume(parser, TOKEN_SEMICOLON, " after variable declaration");
@@ -56,7 +56,7 @@ StmtNode *exprStmt(Parser *parser) {
     StmtExprNode *node = ALLOC_NODE(StmtExprNode);
     node->header.type = STMT_EXPR;
 
-    node->expr = parseExpr(parser, PREC_NONE);
+    node->expr = expression(parser);
     consume(parser, TOKEN_SEMICOLON, " after Expression");
 
     return (StmtNode*) node;
