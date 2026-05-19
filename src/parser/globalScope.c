@@ -8,8 +8,6 @@
 #include "../error.h"
 #include "../util/ArrayList.h"
 
-#define ALLOC_NODE(type) (ArenaAlloc(parser->program.data, sizeof(type)))
-
 // todo: also skips next function declaration after the current error
 void globalSynchronise(Parser *parser) {
     parser->panicMode = false;
