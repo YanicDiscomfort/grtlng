@@ -31,6 +31,7 @@ StmtNode *globalDeclaration(Parser *parser) {
 
     if (!isTypeIdent(parser)) {
         parseErrorAtCurrent(parser, "Expected Function or Variable declaration");
+        return nullptr;
     }
 
     TokenType dataType = parser->previous.type;
