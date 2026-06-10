@@ -27,7 +27,15 @@ Flags parseFlags(int argc, char* argv[]) {
     Flags flags =  {ARCH_NONE, nullptr};
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0) flags.architecture = ARCH_INTERPRET;
-        else flags.sourcefile = argv[i];
+        else {
+            flags.sourcefile = argv[i];
+            if (i + 1 != argc) {
+                fprintf(stderr, "Incorrect usage:\n"
+                                "  Source File must be last argument");
+                exit(1);
+            }
+            break;
+        }
     }
     return flags;
 }
@@ -36,8 +44,8 @@ int main(const int argc, char* argv[]) {
 
     if (argc <= 2) {
         fprintf(stderr, "Incorrect usage\n"
-                              "Proper Usage: grtcmp <source file>\n"
-                              "Use -h for help\n");
+                              "  Proper Usage: grtcmp <source file>\n"
+                              "  Use -h for help\n");
         exit(64);
     }
 
