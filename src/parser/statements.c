@@ -73,8 +73,10 @@ StmtNode *blockStmt(Parser *parser) {
 
     while (!match(parser, TOKEN_RIGHT_BRACE)) {
         if (match(parser, TOKEN_EOF)) parseError(parser, "Unterminated block");
-        StmtNode *next = parseStmt(parser);
+        StmtNode *next;
 
+        if (isTypeIdent(parser)) next = localVarDeclStmt(parser);
+        else next = parseStmt(parser);
         ArrayListAdd(node->content, &next);
     }
 
@@ -86,9 +88,7 @@ StmtNode *blockStmt(Parser *parser) {
 
 StmtNode *parseStmt(Parser *parser) {
     StmtNode* node;
-
-    if (isTypeIdent(parser)) node = localVarDeclStmt(parser);
-    else if (match(parser, TOKEN_LEFT_BRACE)) node = blockStmt(parser);
+    if (match(parser, TOKEN_LEFT_BRACE)) node = blockStmt(parser);
     else node = exprStmt(parser);
 
     if (parser->panicMode) synchronise(parser);
