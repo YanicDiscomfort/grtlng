@@ -6,7 +6,33 @@
 #ifndef  ARENA_ALLOC_SIZE
  #define ARENA_ALLOC_SIZE 0x1000
 #endif
+/**
+ * @brief Create a new Arena.
+ *
+ * @param size The capacity in bytes of the arena and all of its children
+ *
+ * @return Pointer to the new Arena
+ */
+ArenaAllocator *ArenaNewSize(const u16 size) {
+    ArenaAllocator *arena = malloc(sizeof(ArenaAllocator) + size);
 
+    if (arena == nullptr) {
+        INTERN_ERROR_LOCATION();
+        fprintf(stderr, "Failed to allocate new Arena.\n");
+        exit(1);
+    }
+
+    arena->capacity = size;
+    arena->size = 0;
+
+    arena->next = nullptr;
+
+    for (u64 i = 0; i < size; i++) {
+        arena->data[i] = 0;
+    }
+
+    return arena;
+}
 
 /**
  * @brief Create a new Arena.
@@ -15,24 +41,7 @@
  */
 
 ArenaAllocator *ArenaNew() {
-    ArenaAllocator *arena = malloc(sizeof(ArenaAllocator) + ARENA_ALLOC_SIZE);
-
-    if (arena == nullptr) {
-        INTERN_ERROR_LOCATION();
-        fprintf(stderr, "Failed to allocate new Arena.\n");
-        exit(1);
-    }
-
-    arena->capacity = ARENA_ALLOC_SIZE;
-    arena->size = 0;
-
-    arena->next = nullptr;
-
-    for (int i = 0; i < ARENA_ALLOC_SIZE; i++) {
-        arena->data[i] = 0;
-    }
-
-    return arena;
+    return ArenaNewSize(ARENA_ALLOC_SIZE);
 }
 
 /**
@@ -60,13 +69,14 @@ void ArenaFree(ArenaAllocator *arena) {
  * @return Pointer to the newly allocated space
  */
 void *ArenaAlloc(ArenaAllocator *arena, const size_t size) {
-    if (size > ARENA_ALLOC_SIZE) {
+    if (size > arena->capacity) {
+        INTERN_ERROR_LOCATION();
         fprintf(stderr, "Internal error: Allocated space bigger than Arena Allocator size.\n");
         exit(1);
     }
     if (arena->size + size > arena->capacity) {
         if (arena->next == nullptr) {
-            arena->next = ArenaNew();
+            arena->next = ArenaNewSize(arena->capacity);
         }
         return ArenaAlloc(arena->next, size);
     }

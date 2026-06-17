@@ -27,6 +27,7 @@ typedef struct ArenaAllocator {
 } ArenaAllocator;
 
 ArenaAllocator *ArenaNew();
+ArenaAllocator *ArenaNewSize(u16 size);
 void ArenaFree(ArenaAllocator *arena);
 
 void *ArenaAlloc(ArenaAllocator *arena, size_t size);
