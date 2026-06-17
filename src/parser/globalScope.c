@@ -27,6 +27,28 @@ void globalSynchronise(Parser *parser) {
     }
 }
 
+StmtNode *functionDeclaration(Parser *parser, char *name) {
+    if (HashMapHas(&parser->program.functions, name)) {
+        parseError(parser, "Function \"%s\" has already been declared", name);
+    }
+    if (varExists(parser, name)) {
+        parseError(parser, "Function \"%s\" has already been declared as a global variable", name);
+    }
+
+    // check for parameters here
+
+    consume(parser, TOKEN_RIGHT_PAREN, " after function parameters");
+
+    StmtFunction *function = ALLOC_NODE(StmtFunction);
+
+    function->header.type = STMT_FUN_DEC;
+    function->name = name;
+
+    function->body = nullptr;
+
+    return (StmtNode*) function;
+}
+
 StmtNode *globalDeclaration(Parser *parser) {
 
     if (!isTypeIdent(parser)) {
@@ -42,28 +64,7 @@ StmtNode *globalDeclaration(Parser *parser) {
 
     char *name = parser->previous.data;
 
-    if (match(parser, TOKEN_LEFT_PAREN)) {
-        // it's a function
-        if (HashMapHas(&parser->program.functions, name)) {
-            parseError(parser, "Function \"%s\" has already been declared", name);
-        }
-        if (varExists(parser, name)) {
-            parseError(parser, "Function \"%s\" has already been declared as a global variable", name);
-        }
-
-        // check for parameters here
-
-        consume(parser, TOKEN_RIGHT_PAREN, " after function parameters");
-
-        StmtFunction *function = ALLOC_NODE(StmtFunction);
-
-        function->header.type = STMT_FUN_DEC;
-        function->name = name;
-
-        function->body = nullptr;
-
-        return (StmtNode*) function;
-    }
+    if (match(parser, TOKEN_LEFT_PAREN)) return functionDeclaration(parser, name);
 
     // it's a variable
 
