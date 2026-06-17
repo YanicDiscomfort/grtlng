@@ -10,6 +10,22 @@
 #include "../error.h"
 #include "../util/HashMap.h"
 
+void parseFunction(Parser *parser, FunctionDeclaration declaration) {
+    // set parser to beginning of function and parse body as block
+    parser->token = declaration.start;
+    advance(parser);
+    consume(parser, TOKEN_LEFT_BRACE, " after function declaration");
+
+    StmtBlockNode *body = (StmtBlockNode*) blockStmt(parser);
+
+    // add body to Function in HashMap
+    StmtFunction function;
+    HashMapGet(&parser->program.functions, declaration.name, &function);
+    function.body = body;
+
+    HashMapSet(&parser->program.functions, function.name, &function);
+}
+
 ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
     /*
      * Plan:
@@ -48,19 +64,8 @@ ParseResult parseAll(Parser *parser, ArrayList *tokens, const char* source) {
         // pull next function from queue
         FunctionDeclaration declaration = ArrayListRead(functions, i, FunctionDeclaration);
 
-        // set parser to beginning of function and parse body as block
-        parser->token = declaration.start;
-        advance(parser);
-        consume(parser, TOKEN_LEFT_BRACE, " after function declaration");
+        parseFunction(parser, declaration);
 
-        StmtBlockNode *body = (StmtBlockNode*) blockStmt(parser);
-
-        // add body to Function in HashMap
-        StmtFunction function;
-        HashMapGet(&parser->program.functions, declaration.name, &function);
-        function.body = body;
-
-        HashMapSet(&parser->program.functions, function.name, &function);
     }
 
     // call main to finish init segment
